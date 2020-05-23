@@ -13,7 +13,7 @@ public class ThreadPoolManager {
 
     private ThreadPoolManager(){}
 
-    public ThreadPoolManager getInstance(){
+    public static ThreadPoolManager getInstance(){
         return SingleTon.instance;
     }
 

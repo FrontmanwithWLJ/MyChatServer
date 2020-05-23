@@ -1,8 +1,12 @@
 package com.sl.chat.thread;
 
+import com.sl.chat.bean.Message;
+import com.sl.chat.bean.UserInfo;
 import com.sl.chat.callback.ReceiveMessageListen;
 import java.io.*;
 import java.net.Socket;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 public class ClientThread extends Thread {
     private Socket client;
@@ -10,17 +14,20 @@ public class ClientThread extends Thread {
     private OutputStreamWriter writer = null;
 
     //客户端的识别信息
-    private int id = -1;
-    private String name = "";
+    private UserInfo info;
+    //客户端发来的消息
+    private Message receiveMsg;
     private ReceiveMessageListen listener = null;
 
     public ClientThread(int id, Socket socket, ReceiveMessageListen listener){
-        this.id = id;
+        info = new UserInfo();
+        info.setId(id);
+
         client = socket;
         this.listener = listener;
         try {
-            reader = new BufferedReader(new InputStreamReader(client.getInputStream()));
-            writer = new OutputStreamWriter(client.getOutputStream());
+            reader = new BufferedReader(new InputStreamReader(client.getInputStream(),StandardCharsets.UTF_8));
+            writer = new OutputStreamWriter(client.getOutputStream(),StandardCharsets.UTF_8);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -33,42 +40,42 @@ public class ClientThread extends Thread {
             System.out.println("断开连接");
             return;
         }
-        sendMsg("欢迎进入我的聊天室\n请输入昵称:");
+        sendMsg(new Message("欢迎进入我的聊天室\n请输入昵称:"));
         try {
+            String name = reader.readLine();
+            info = new UserInfo();
+            receiveMsg = new Message();
+            info.setName(name);
+            receiveMsg.setSource(info);
+            sendMsg(new Message("亲爱的 "+name+" 你好，你现在可以开始聊天了，快和大家打个招呼吧\n提示输入 exit 退出房间哦\n"));
+            listener.onReceiveMsg(receiveMsg.setMsg( "加入聊天室"),false);
             while (true){
                 String s = reader.readLine();
-//                StringBuilder str = new StringBuilder();
-//                int ch;
-//                str.append(reader.readLine());
-//                while ((ch =in.read())!=-1){
-//                    str.append((char) ch);
-//                }
-                if (name.equals("")){
-                    name = s;
-                    sendMsg("亲爱的 "+name+" 你好，你现在可以开始聊天了，快和大家打个招呼吧\n提示输入 exit 退出房间哦\n");
-                    listener.onReceiveMsg(id,name,"加入聊天室",false);
-                }else {
-                    if ("exit".equals(s) || s == null){
-                        sendMsg("Bye-bye!\n");
-                        listener.onReceiveMsg(id,name,"",true);
+                    if ("exit".equals(s)){
+                        sendMsg(new Message("Bye-bye!\n"));
+                        listener.onReceiveMsg(receiveMsg.setMsg(""),true);
                         break;
                     }
-                    listener.onReceiveMsg(id,name,s,false);
-                }
+                    listener.onReceiveMsg(receiveMsg.setMsg(s),false);
             }
         } catch (IOException e) {
             e.printStackTrace();
             //手动发送退出指令
-            listener.onReceiveMsg(id,name,"",true);
+            listener.onReceiveMsg(receiveMsg.setMsg(""),true);
         }
         finally {
             close();
         }
     }
 
-    public void sendMsg(String msg){
+    /**
+     * 向客户端发送消息
+     * @param msg 当source为空时，是服务器在发消息
+     */
+    public void sendMsg(Message msg){
         try {
-            writer.write(msg,0,msg.length());
+            String json = msg.toJson();
+            writer.write(json,0,json.length());
             writer.flush();
         } catch (IOException e) {
             e.printStackTrace();
@@ -88,10 +95,5 @@ public class ClientThread extends Thread {
             reader = null;
             client=null;
         } catch (IOException e) { }
-    }
-
-    @Override
-    public String toString(){
-        return id+"\t"+name;
     }
 }

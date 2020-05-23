@@ -76,21 +76,21 @@ public class ChatManager implements ReceiveMessageListen {
 
     //负责向其他的客户端发送消息
     @Override
-    public void onReceiveMsg(int id, Message msg, boolean exit) {
+    public void onReceiveMsg(Message msg, boolean exit) {
         threadPool.execute(() -> {
             String msgTmp = msg.getMsg();
-            UserInfo userInfo = msg.getName();
+            UserInfo userInfo = msg.getSource();
             //退出指令
             if (exit) {
                 msgTmp = "退出房间\n";
                 //释放资源
-                delPerson(id,userInfo.getName());
+                delPerson(userInfo.getId(),userInfo.getName());
             }
             System.out.println(userInfo.getName() + ":" + msgTmp);
             //不发送空消息
             if ("".equals(msgTmp))return;
             for (int i = 0; i < personList.size(); i++) {
-                if (i != id) personList.get(i).sendMsg("*-* "+userInfo.getName() + ":" + msgTmp + "\n");
+                if (i != userInfo.getId()) personList.get(i).sendMsg(new Message("*-* "+userInfo.getName() + ":" + msgTmp + "\n0"));
             }
         });
     }

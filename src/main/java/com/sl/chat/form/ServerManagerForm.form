@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="com.sl.chat.form.ServerManagerForm">
+  <grid id="27dc6" binding="jPanel" layout-manager="GridLayoutManager" row-count="2" column-count="1" same-size-horizontally="true" same-size-vertically="false" hgap="-1" vgap="-1">
+    <margin top="10" left="10" bottom="10" right="10"/>
+    <constraints>
+      <xy x="20" y="20" width="500" height="400"/>
+    </constraints>
+    <properties>
+      <minimumSize width="500" height="387"/>
+      <preferredSize width="500" height="287"/>
+    </properties>
+    <border type="none"/>
+    <children>
+      <component id="7ce1e" class="javax.swing.JButton" binding="stop">
+        <constraints>
+          <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <actionCommand value="关闭服务"/>
+          <text value="Button"/>
+        </properties>
+      </component>
+      <scrollpane id="c2f88" binding="jScrollPanel" custom-create="true">
+        <constraints>
+          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties/>
+        <border type="none"/>
+        <children>
+          <component id="6401f" class="javax.swing.JList" binding="jList" custom-create="true">
+            <constraints/>
+            <properties>
+              <fixedCellHeight value="-1"/>
+            </properties>
+          </component>
+        </children>
+      </scrollpane>
+    </children>
+  </grid>
+</form>

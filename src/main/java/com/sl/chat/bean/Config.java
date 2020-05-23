@@ -1,9 +1,21 @@
 package com.sl.chat.bean;
 
-public class Config  {
+import com.sl.chat.json.JsonAble;
+
+/**
+ * 程序配置信息
+ */
+public class Config extends JsonAble {
     private String logDir;
     private int port;
     private String password;
+
+    public Config(){}
+    public Config(String logDir,String password,int port){
+        this.logDir= logDir;
+        this.password = password;
+        this.port = port;
+    }
 
     public String getLogDir() {
         return logDir;
