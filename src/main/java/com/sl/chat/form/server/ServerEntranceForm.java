@@ -68,19 +68,15 @@ public class ServerEntranceForm {
             if (portNum < 1024 || portNum > 49151)
                 callBack.finish(false, "端口越界",false);
             else {
-                ThreadPoolManager.getInstance().run(() -> {
                     Server.test(portNum, callBack,false);
-                });
             }
         });
         run.addActionListener((e) -> {
             portMsg.setText("正在启动中...");
-            ThreadPoolManager.getInstance().run(() -> {
                 int portNum = getPort();
                 if (portNum > 1023 && portNum < 49152) {
                     Server.test(portNum, callBack,true);
                 }
-            });
         });
         //一系列初始化完毕才显示窗口
         frame.setVisible(true);
@@ -128,10 +124,8 @@ public class ServerEntranceForm {
             serverConfig.setPassword(pwd);
             serverConfig.setPort(port);
         }
-        ThreadPoolManager.getInstance().run(() -> {
             FileUtil.write(new File("").getAbsolutePath(), "MyChatServerConfig.json", serverConfig.toJson(), false);
             fileLock.unlock();
-        });
     }
 
     private void runServer() {

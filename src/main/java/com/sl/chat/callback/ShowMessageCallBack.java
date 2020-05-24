@@ -7,4 +7,5 @@ import com.sl.chat.bean.Message;
  */
 public interface ShowMessageCallBack {
     void show(Message message);
+    void setId(int id);
 }

@@ -26,12 +26,17 @@ public class ServerManagerForm {
     //服务器线程实例
     private Server server;
     //显示消息
-    private ShowMessageCallBack showMessageCallBack = message -> {
-        if (model != null) {
-            model.addElement(message);
-            JScrollBar scrollbar = jScrollPane.getVerticalScrollBar();
-            scrollbar.setValue(scrollbar.getMaximum());
+    private ShowMessageCallBack showMessageCallBack = new ShowMessageCallBack() {
+        @Override
+        public void show(Message message) {
+            if (model != null) {
+                model.addElement(message);
+                JScrollBar scrollbar = jScrollPane.getVerticalScrollBar();
+                scrollbar.setValue(scrollbar.getMaximum());
+            }
         }
+        @Override
+        public void setId(int id) { }
     };
 
     public ServerManagerForm(ServerEntranceForm entranceForm, ServerConfig serverConfig) {

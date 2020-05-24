@@ -6,6 +6,7 @@ import com.sl.chat.bean.LinkInfo;
 import com.sl.chat.bean.Message;
 import com.sl.chat.bean.UserInfo;
 import com.sl.chat.callback.ShowMessageCallBack;
+import com.sl.chat.util.StringUtil;
 
 import java.io.*;
 import java.net.Socket;
@@ -21,6 +22,7 @@ public class Client extends Thread {
     private OutputStreamWriter writer;
     //标记运行状态
     private boolean target = true;
+    private Gson gson = new Gson();
 
     public Client(ClientConfig config, ShowMessageCallBack callBack) {
         this.config = config;
@@ -40,25 +42,21 @@ public class Client extends Thread {
     @Override
     public void run() {
         try {
-            try {
-                sleep(1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            Gson gson = new Gson();
             String json = new LinkInfo(config.getUsername(),config.getPassword()).toJson();
             //发送密码验证
-            sendMsg(json);
+            sendMsg(json,false);
             String t = reader.readLine();//等待服务器响应.返回的是一个UserInfo的json
             userInfo = gson.fromJson(t, UserInfo.class);
             //不为空则说明密码正确
             if (userInfo != null) {
+                showMessageCallBack.setId(userInfo.getId());
                 while (target) {
                     StringBuilder tmp = new StringBuilder(reader.readLine());
                     while (!tmp.toString().endsWith("}")){
                         tmp.append(reader.readLine());
                     }
                     try {
+                        System.out.println("["+tmp+"]");
                         showMessageCallBack.show(gson.fromJson(tmp.toString(), Message.class));
                     }catch (Exception e){
                         e.printStackTrace();
@@ -74,19 +72,21 @@ public class Client extends Thread {
         }
     }
 
-    public synchronized void sendMsg(String msg) {
+    public synchronized void sendMsg(String msg,boolean echoBack) {
         try {
-            if (writer == null)return;
-            msg += "\n";
+            if (writer == null|| StringUtil.isNullOrEmpty(msg))return;
+            msg+="\n";
             writer.write(msg, 0, msg.length());
             writer.flush();
+            if (echoBack)
+                showMessageCallBack.show(new Message(userInfo,msg));
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
     public void exit() {
-        sendMsg("exit");
+        sendMsg("exit",false);
         close();
     }
 

@@ -28,8 +28,10 @@ public class ClientThread extends Thread {
     private ReceiveMessageListen listener = null;
     //密码
     private String password = "";
+    private Gson gson = new Gson();
 
-    public ClientThread(int id, String password,Socket socket, ReceiveMessageListen listener) {
+
+    public ClientThread(int id, String password, Socket socket, ReceiveMessageListen listener) {
         info = new UserInfo();
         info.setId(id);
         this.password = password;
@@ -54,8 +56,7 @@ public class ClientThread extends Thread {
         }
         try {
             String t = reader.readLine();
-            Gson gson = new Gson();
-            LinkInfo linkInfo = gson.fromJson(t,LinkInfo.class);
+            LinkInfo linkInfo = gson.fromJson(t, LinkInfo.class);
             if (linkInfo != null && password.equals(linkInfo.getPassword())) {//验证密码
                 String name = linkInfo.getUsername();
                 info = new UserInfo();
@@ -71,15 +72,15 @@ public class ClientThread extends Thread {
                     //后面普通消息就直接用字符串
                     String s = reader.readLine();
                     if ("exit".equals(s)) {
-                        sendMsg(new Message("Bye-bye!\n").toJson());
+                        sendMsg(new Message("Bye-bye!").toJson());
                         listener.onReceiveMsg(receiveMsg.setMsg(""), true);
                         break;
                     }
                     if (!StringUtil.isNullOrEmpty(s))
                         listener.onReceiveMsg(receiveMsg.setMsg(s), false);
                 }
-            }else {
-                sendMsg(new Message(new UserInfo(-1,"系统消息"),"密码错误").toJson());
+            } else {
+                sendMsg(new Message(new UserInfo(-1, "系统消息"), "密码错误").toJson());
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -97,8 +98,8 @@ public class ClientThread extends Thread {
      */
     public synchronized void sendMsg(String msg) {
         try {
-            if (writer == null)return;
-            msg+="\n" ;
+            if (writer == null || StringUtil.isNullOrEmpty(msg)) return;
+            msg += "\n";
             writer.write(msg, 0, msg.length());
             writer.flush();
         } catch (IOException e) {
