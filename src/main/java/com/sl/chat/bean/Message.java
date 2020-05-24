@@ -65,7 +65,7 @@ public class Message extends JsonAble {
     }
 
     public String getHeader(){
-        return source.getName() + "\t" + TimeUtil.fromLong(time);
+        return source.getName() + "   " + TimeUtil.fromLong(time);
     }
 
 //    @Override
