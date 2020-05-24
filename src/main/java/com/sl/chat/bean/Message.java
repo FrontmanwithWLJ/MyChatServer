@@ -1,6 +1,7 @@
 package com.sl.chat.bean;
 
 import com.sl.chat.json.JsonAble;
+import com.sl.chat.util.TimeUtil;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -64,14 +65,9 @@ public class Message extends JsonAble {
     }
 
     public String getHeader(){
-        return source.getName() + "\t" + fromLong(time);
+        return source.getName() + "\t" + TimeUtil.fromLong(time);
     }
 
-    public String fromLong(long t){
-        Date date = new Date(t);
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-        return simpleDateFormat.format(date);
-    }
 //    @Override
 //    public String toJson() {
 //        StringBuilder b = new StringBuilder();

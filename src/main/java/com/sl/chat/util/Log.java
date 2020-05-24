@@ -1,7 +1,9 @@
 package com.sl.chat.util;
 
 public class Log {
-    public static void e(String msg){
-
+    //日志写入文件
+    public static void toFile(String path,String msg){
+        String fileName = "runLog.log";
+        FileUtil.write(path,fileName,msg,true);
     }
 }

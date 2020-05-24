@@ -6,12 +6,20 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
 
+/**
+ * 消息列表渲染
+ */
 public class MessageRenderer implements ListCellRenderer<Message> {
     private ArrayList<Holder> holders = new ArrayList<>();
     private int id =-1;
     public MessageRenderer(int id){
         this.id = id;
     }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
     @Override
     public Component getListCellRendererComponent(JList<? extends Message> list, Message value, int index, boolean isSelected, boolean cellHasFocus) {
         //说明是新元素

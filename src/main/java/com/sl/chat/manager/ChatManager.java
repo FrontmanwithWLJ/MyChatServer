@@ -1,10 +1,14 @@
 package com.sl.chat.manager;
 
+import com.sl.chat.bean.ServerConfig;
 import com.sl.chat.bean.Message;
 import com.sl.chat.bean.UserInfo;
+import com.sl.chat.callback.ShowMessageCallBack;
 import com.sl.chat.exception.ChatRoomFullException;
 import com.sl.chat.callback.ReceiveMessageListen;
 import com.sl.chat.thread.ClientThread;
+import com.sl.chat.util.Log;
+import com.sl.chat.util.TimeUtil;
 
 import java.net.Socket;
 import java.util.ArrayList;
@@ -16,15 +20,20 @@ import java.util.concurrent.TimeUnit;
  * IoDH 单例模式
  */
 public class ChatManager implements ReceiveMessageListen {
+    //配置信息
+    private ServerConfig serverConfig;
     //聊天人数
     private int count = 50;
     //每个线程都是一个客户端
     private ArrayList<ClientThread> personList = new ArrayList<>();
+    //向客户端推送消息
     private ThreadPoolExecutor threadPool = new ThreadPoolExecutor(
             2,
             5,
             5000,
             TimeUnit.MILLISECONDS, new LinkedBlockingDeque<>(46));
+
+    private ShowMessageCallBack showMessageCallBack = null;
 
     private ChatManager() {
         this(50);
@@ -50,29 +59,22 @@ public class ChatManager implements ReceiveMessageListen {
     }
 
     //ClientThread 自身调用 客户端断开连接时
-    public void delPerson(int id,String name) {
+    public void delPerson(int id, String name) {
         personList.remove(id);
-        System.out.println(id + "号客户端" + name + "断开连接\n");
     }
 
-//    @Override
-//    public void onReceiveMsg(int id, String name, final String msg, boolean exit) {
-//        threadPool.execute(() -> {
-//            String msgTmp = msg;
-//            //退出指令
-//            if (exit) {
-//                msgTmp = "退出房间\n";
-//                //释放资源
-//                delPerson(id,name);
-//            }
-//            System.out.println(name + ":" + msgTmp);
-//            //不发送空消息
-//            if ("".equals(msgTmp))return;
-//            for (int i = 0; i < personList.size(); i++) {
-//                if (i != id) personList.get(i).sendMsg("*-* "+name + ":" + msgTmp + "\n");
-//            }
-//        });
-//    }
+    //清空房间
+    public void removeAll() {
+        if (serverConfig != null) {
+            StringBuilder stringBuilder = new StringBuilder();
+            stringBuilder.append("服务器强制关闭:").append(TimeUtil.fromLong(0)).append("\n\t当前在线人数：").append(personList.size());
+            Log.toFile(serverConfig.getLogDir(), stringBuilder.toString());
+        }
+        personList.forEach(client -> {
+            client.close();
+            personList.remove(client);
+        });
+    }
 
     //负责向其他的客户端发送消息
     @Override
@@ -84,15 +86,27 @@ public class ChatManager implements ReceiveMessageListen {
             if (exit) {
                 msgTmp = "退出房间\n";
                 //释放资源
-                delPerson(userInfo.getId(),userInfo.getName());
+                delPerson(userInfo.getId(), userInfo.getName());
+                //把退出指令修改成系统消息推送给其他人
+                msg.setMsg(msg.getSource().getName() + msgTmp);
+                msg.setSource(new UserInfo(-1, "系统消息"));
             }
-            System.out.println(userInfo.getName() + ":" + msgTmp);
             //不发送空消息
-            if ("".equals(msgTmp))return;
+            if ("".equals(msgTmp)) return;
+            if (showMessageCallBack != null)
+                showMessageCallBack.show(msg);
             for (int i = 0; i < personList.size(); i++) {
-                if (i != userInfo.getId()) personList.get(i).sendMsg(new Message("*-* "+userInfo.getName() + ":" + msgTmp + "\n0"));
+                if (i != userInfo.getId()) personList.get(i).sendMsg(msg);
             }
         });
+    }
+
+    public void setShowMessageCallBack(ShowMessageCallBack showMessageCallBack) {
+        this.showMessageCallBack = showMessageCallBack;
+    }
+
+    public void setServerConfig(ServerConfig serverConfig) {
+        this.serverConfig = serverConfig;
     }
 
     /**

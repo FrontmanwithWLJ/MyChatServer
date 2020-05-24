@@ -3,15 +3,15 @@ package com.sl.chat.bean;
 import com.sl.chat.json.JsonAble;
 
 /**
- * 程序配置信息
+ * 服务端配置信息
  */
-public class Config extends JsonAble {
+public class ServerConfig extends JsonAble {
     private String logDir;
     private int port;
     private String password;
 
-    public Config(){}
-    public Config(String logDir,String password,int port){
+    public ServerConfig(){}
+    public ServerConfig(String logDir, String password, int port){
         this.logDir= logDir;
         this.password = password;
         this.port = port;

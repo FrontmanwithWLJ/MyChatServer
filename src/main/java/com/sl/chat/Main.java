@@ -1,6 +1,6 @@
 package com.sl.chat;
 
-import com.sl.chat.form.ServerEntranceForm;
+import com.sl.chat.form.server.ServerEntranceForm;
 
 //todo 实现注册接口,可以改个可视化界面,数据写入数据库
 //todo 完善本地化日志
