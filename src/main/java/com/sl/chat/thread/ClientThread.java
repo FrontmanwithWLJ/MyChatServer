@@ -1,8 +1,11 @@
 package com.sl.chat.thread;
 
+import com.google.gson.Gson;
+import com.sl.chat.bean.LinkInfo;
 import com.sl.chat.bean.Message;
 import com.sl.chat.bean.UserInfo;
 import com.sl.chat.callback.ReceiveMessageListen;
+import com.sl.chat.util.StringUtil;
 
 import java.io.*;
 import java.net.Socket;
@@ -23,18 +26,21 @@ public class ClientThread extends Thread {
     //客户端发来的消息
     private Message receiveMsg;
     private ReceiveMessageListen listener = null;
+    //密码
+    private String password = "";
 
-    public ClientThread(int id, Socket socket, ReceiveMessageListen listener) {
+    public ClientThread(int id, String password,Socket socket, ReceiveMessageListen listener) {
         info = new UserInfo();
         info.setId(id);
-
-        client = socket;
+        this.password = password;
         this.listener = listener;
+        client = socket;
         try {
             reader = new BufferedReader(new InputStreamReader(client.getInputStream(), StandardCharsets.UTF_8));
             writer = new OutputStreamWriter(client.getOutputStream(), StandardCharsets.UTF_8);
         } catch (IOException e) {
             e.printStackTrace();
+            return;
         }
         //创建就开始运行
         start();
@@ -46,23 +52,34 @@ public class ClientThread extends Thread {
             System.out.println("断开连接");
             return;
         }
-        sendMsg(new Message("欢迎进入我的聊天室\n请输入昵称:"));
         try {
-            String name = reader.readLine();
-            info = new UserInfo();
-            receiveMsg = new Message();
-            info.setName(name);
-            receiveMsg.setSource(info);
-            sendMsg(new Message("亲爱的 " + name + " 你好，你现在可以开始聊天了，快和大家打个招呼吧\n提示输入 exit 退出房间哦\n"));
-            listener.onReceiveMsg(receiveMsg.setMsg("加入聊天室"), false);
-            while (true) {
-                String s = reader.readLine();
-                if ("exit".equals(s)) {
-                    sendMsg(new Message("Bye-bye!\n"));
-                    listener.onReceiveMsg(receiveMsg.setMsg(""), true);
-                    break;
+            String t = reader.readLine();
+            Gson gson = new Gson();
+            LinkInfo linkInfo = gson.fromJson(t,LinkInfo.class);
+            if (linkInfo != null && password.equals(linkInfo.getPassword())) {//验证密码
+                String name = linkInfo.getUsername();
+                info = new UserInfo();
+                receiveMsg = new Message();
+                info.setName(name);
+                //将此客户端的基础信息返回
+                sendMsg(info.toJson());
+                receiveMsg.setSource(info);
+                sendMsg(new Message(new UserInfo(-1, "系统消息"), "亲爱的 " + name + " 你好，你现在可以开始聊天了，快和大家打个招呼吧\n提示输入 exit 退出房间哦!").toJson());
+                listener.onReceiveMsg(receiveMsg.setMsg("加入聊天室"), false);
+                while (true) {
+                    //前面验证的过程用json
+                    //后面普通消息就直接用字符串
+                    String s = reader.readLine();
+                    if ("exit".equals(s)) {
+                        sendMsg(new Message("Bye-bye!\n").toJson());
+                        listener.onReceiveMsg(receiveMsg.setMsg(""), true);
+                        break;
+                    }
+                    if (!StringUtil.isNullOrEmpty(s))
+                        listener.onReceiveMsg(receiveMsg.setMsg(s), false);
                 }
-                listener.onReceiveMsg(receiveMsg.setMsg(s), false);
+            }else {
+                sendMsg(new Message(new UserInfo(-1,"系统消息"),"密码错误").toJson());
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -78,10 +95,11 @@ public class ClientThread extends Thread {
      *
      * @param msg 当source为空时，是服务器在发消息
      */
-    public void sendMsg(Message msg) {
+    public synchronized void sendMsg(String msg) {
         try {
-            String json = msg.toJson();
-            writer.write(json, 0, json.length());
+            if (writer == null)return;
+            msg+="\n" ;
+            writer.write(msg, 0, msg.length());
             writer.flush();
         } catch (IOException e) {
             e.printStackTrace();
@@ -100,9 +118,6 @@ public class ClientThread extends Thread {
                 reader.close();
             if (client != null)
                 client.close();
-            writer = null;
-            reader = null;
-            client = null;
         } catch (IOException e) {
         }
     }

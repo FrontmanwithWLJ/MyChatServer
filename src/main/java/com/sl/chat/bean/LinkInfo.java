@@ -6,6 +6,11 @@ public class LinkInfo extends JsonAble {
     private String username;
     private String password;
 
+    public LinkInfo(String username,String password){
+        this.username = username;
+        this.password = password;
+    }
+
     public String getPassword() {
         return password;
     }

@@ -7,10 +7,10 @@ import java.nio.charset.StandardCharsets;
  * charset = UTF-8
  */
 public class FileUtil {
-    public static void main(String[] a){
-        write("/home/frontman/downloads","config1.json","{\"name\":\"石浪\"}",true);
-        System.out.println( read("/home/frontman/downloads","config1.json"));
-    }
+//    public static void main(String[] a){
+//        write("/home/frontman/downloads","config1.json","{\"name\":\"石浪\"}",true);
+//        System.out.println( read("/home/frontman/downloads","config1.json"));
+//    }
     /**
      *
      * @param path 目录

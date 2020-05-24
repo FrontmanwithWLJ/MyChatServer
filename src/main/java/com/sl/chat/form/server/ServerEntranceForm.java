@@ -37,6 +37,10 @@ public class ServerEntranceForm {
         }
     };
 
+    public static void main(String[] a){
+        new ServerEntranceForm();
+    }
+
     public ServerEntranceForm() {
         init();
     }
@@ -44,7 +48,7 @@ public class ServerEntranceForm {
     private void init() {
         //加载配置文件
         loadConfig();
-        frame = new JFrame("EntranceForm");
+        frame = new JFrame("我的聊天服务器");
         frame.setContentPane(jPanel);
         frame.setLocationRelativeTo(null);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

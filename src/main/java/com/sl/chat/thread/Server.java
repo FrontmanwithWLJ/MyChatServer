@@ -25,6 +25,7 @@ public class Server extends Thread {
     public Server(ServerConfig serverConfig, ShowMessageCallBack callBack) {
         this.serverConfig = serverConfig;
         manager.setShowMessageCallBack(callBack);
+        manager.setPassword(serverConfig.getPassword());
     }
 
     @Override

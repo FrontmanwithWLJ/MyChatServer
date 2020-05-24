@@ -32,7 +32,8 @@ public class ChatManager implements ReceiveMessageListen {
             5,
             5000,
             TimeUnit.MILLISECONDS, new LinkedBlockingDeque<>(46));
-
+    //连接密码
+    private String password;
     private ShowMessageCallBack showMessageCallBack = null;
 
     private ChatManager() {
@@ -51,7 +52,7 @@ public class ChatManager implements ReceiveMessageListen {
         if (full()) {
             throw new ChatRoomFullException();
         }
-        personList.add(new ClientThread(personList.size(), socket, this));
+        personList.add(new ClientThread(personList.size(),password,socket, this));
     }
 
     public Boolean full() {
@@ -96,7 +97,7 @@ public class ChatManager implements ReceiveMessageListen {
             if (showMessageCallBack != null)
                 showMessageCallBack.show(msg);
             for (int i = 0; i < personList.size(); i++) {
-                if (i != userInfo.getId()) personList.get(i).sendMsg(msg);
+                if (i != userInfo.getId()) personList.get(i).sendMsg(msg.toJson());
             }
         });
     }
@@ -107,6 +108,10 @@ public class ChatManager implements ReceiveMessageListen {
 
     public void setServerConfig(ServerConfig serverConfig) {
         this.serverConfig = serverConfig;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     /**

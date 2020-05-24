@@ -42,7 +42,7 @@ public class ServerManagerForm {
 
     private void init() {
         Log.toFile(serverConfig.getLogDir(), "启动服务器：" + TimeUtil.fromLong(0) + "\n");
-        frame = new JFrame("ServerManagerForm");
+        frame = new JFrame("聊天管理");
         frame.setContentPane(jPanel);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLocationRelativeTo(null);
@@ -51,7 +51,6 @@ public class ServerManagerForm {
         frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         jList.setCellRenderer(new MessageRenderer(-2));
 
-        jList.setAutoscrolls(true);
         stop.addActionListener((e) -> {
             stopServer();
             close();
